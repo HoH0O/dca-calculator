@@ -1,79 +1,25 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DCA 계산기 - 적립식 투자 분석</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>미국 주식 DCA 계산기</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>DCA 계산기</h1>
-            <p>적립식 투자의 힘을 확인해보세요.</p>
-        </header>
-
-        <main>
-            <section class="input-section">
-                <div class="form-group">
-                    <label for="ticker">종목 티커</label>
-                    <div class="autocomplete">
-                        <input type="text" id="ticker" placeholder="예: AAPL, TSLA" autocomplete="off">
-                        <div id="autocomplete-list" class="autocomplete-items"></div>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="start-date">시작일</label>
-                        <input type="date" id="start-date">
-                    </div>
-                    <div class="form-group">
-                        <label for="end-date">종료일</label>
-                        <input type="date" id="end-date">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="frequency">투자 주기</label>
-                        <select id="frequency">
-                            <option value="daily">매일 (Daily)</option>
-                            <option value="weekly">매주 (Weekly)</option>
-                            <option value="monthly" selected>매월 (Monthly)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="amount">투자 금액 ($)</label>
-                        <input type="number" id="amount" placeholder="예: 100" min="1">
-                    </div>
-                </div>
-
-                <button id="analyze-btn">분석하기</button>
-            </section>
-
-            <section id="result-section" class="result-section" style="display: none;">
-                <div class="stats-cards">
-                    <div class="card">
-                        <h3>최종 자산 가치</h3>
-                        <p id="end-value">$0</p>
-                    </div>
-                    <div class="card">
-                        <h3>총 투자 금액</h3>
-                        <p id="total-invested">$0</p>
-                    </div>
-                    <div class="card">
-                        <h3>누적 수익률</h3>
-                        <p id="return-rate">0%</p>
-                    </div>
-                </div>
-                <div class="chart-container">
-                    <canvas id="dcaChart"></canvas>
-                </div>
-            </section>
-        </main>
+  <div id="root">
+    <div class="init-loader">
+      <div class="init-spinner"></div>
+      <p>로딩 중...</p>
     </div>
-    <script src="main.js"></script>
+  </div>
+  <script type="text/babel" src="main.js" data-presets="react"></script>
 </body>
 </html>
