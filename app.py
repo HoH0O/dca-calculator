@@ -23,6 +23,105 @@ st.caption("yfinance 실시간 데이터를 활용해 과거 적립식 투자의
 
 
 # ---------------------------------------------------------------------------
+# Ticker presets — 드롭다운 + 자동완성용 인기 종목/ETF 목록
+# ---------------------------------------------------------------------------
+TICKER_PRESETS: list[tuple[str, str]] = [
+    # Mega-cap Tech
+    ("AAPL", "Apple"),
+    ("MSFT", "Microsoft"),
+    ("NVDA", "NVIDIA"),
+    ("GOOGL", "Alphabet (Class A)"),
+    ("GOOG", "Alphabet (Class C)"),
+    ("AMZN", "Amazon"),
+    ("META", "Meta Platforms"),
+    ("TSLA", "Tesla"),
+    ("AVGO", "Broadcom"),
+    ("NFLX", "Netflix"),
+    ("ORCL", "Oracle"),
+    # Tech / Software / Semis
+    ("AMD", "Advanced Micro Devices"),
+    ("INTC", "Intel"),
+    ("CRM", "Salesforce"),
+    ("ADBE", "Adobe"),
+    ("CSCO", "Cisco Systems"),
+    ("QCOM", "Qualcomm"),
+    ("PLTR", "Palantir"),
+    ("COIN", "Coinbase"),
+    ("MSTR", "MicroStrategy"),
+    ("UBER", "Uber"),
+    ("SHOP", "Shopify"),
+    ("ARM", "Arm Holdings"),
+    # Financials
+    ("BRK-B", "Berkshire Hathaway"),
+    ("JPM", "JPMorgan Chase"),
+    ("V", "Visa"),
+    ("MA", "Mastercard"),
+    ("BAC", "Bank of America"),
+    # Healthcare
+    ("LLY", "Eli Lilly"),
+    ("UNH", "UnitedHealth"),
+    ("JNJ", "Johnson & Johnson"),
+    ("ABBV", "AbbVie"),
+    ("MRK", "Merck"),
+    # Consumer
+    ("WMT", "Walmart"),
+    ("COST", "Costco"),
+    ("HD", "Home Depot"),
+    ("KO", "Coca-Cola"),
+    ("PEP", "PepsiCo"),
+    ("MCD", "McDonald's"),
+    ("NKE", "Nike"),
+    ("SBUX", "Starbucks"),
+    # Energy / Industrial
+    ("XOM", "Exxon Mobil"),
+    ("CVX", "Chevron"),
+    ("BA", "Boeing"),
+    ("CAT", "Caterpillar"),
+    # Index ETF
+    ("SPY", "SPDR S&P 500 ETF"),
+    ("VOO", "Vanguard S&P 500 ETF"),
+    ("QQQ", "Invesco QQQ (NASDAQ 100)"),
+    ("VTI", "Vanguard Total Stock Market"),
+    ("DIA", "SPDR Dow Jones"),
+    ("IWM", "iShares Russell 2000"),
+    # Dividend ETF
+    ("SCHD", "Schwab US Dividend ETF"),
+    ("VIG", "Vanguard Dividend Appreciation"),
+    ("VYM", "Vanguard High Dividend Yield"),
+    ("JEPI", "JPMorgan Equity Premium Income"),
+    # Sector ETF
+    ("XLK", "Tech Select Sector"),
+    ("XLF", "Financial Select Sector"),
+    ("XLE", "Energy Select Sector"),
+    ("XLV", "Health Care Select Sector"),
+    ("SOXX", "iShares Semiconductor"),
+    ("SMH", "VanEck Semiconductor"),
+    # Bond / Commodity ETF
+    ("TLT", "iShares 20+ Yr Treasury"),
+    ("BND", "Vanguard Total Bond"),
+    ("GLD", "SPDR Gold Trust"),
+    ("IAU", "iShares Gold Trust"),
+    # Leveraged ETF
+    ("TQQQ", "ProShares 3x NASDAQ 100"),
+    ("UPRO", "ProShares 3x S&P 500"),
+    ("SOXL", "Direxion 3x Semiconductors"),
+    ("TMF", "Direxion 3x 20+ Treasury"),
+    ("NVDL", "GraniteShares 2x NVIDIA"),
+    ("TSLL", "Direxion 2x Tesla"),
+]
+
+CUSTOM_OPTION = "✏️ 직접 입력 (Custom)"
+
+
+def _format_ticker_option(option: str) -> str:
+    """드롭다운 표시용 — 'AAPL — Apple' 형태로 보여준다."""
+    if option == CUSTOM_OPTION:
+        return CUSTOM_OPTION
+    name = next((n for t, n in TICKER_PRESETS if t == option), "")
+    return f"{option} — {name}" if name else option
+
+
+# ---------------------------------------------------------------------------
 # Data layer
 # ---------------------------------------------------------------------------
 def _make_yf_session():
@@ -136,16 +235,29 @@ def run_dca_simulation(
 # ---------------------------------------------------------------------------
 with st.sidebar:
     st.header("⚙️ 투자 설정")
-    ticker_input = (
-        st.text_input(
-            "투자 종목 (티커)",
-            value="AAPL",
-            placeholder="예: AAPL, NVDA, SPY, NVDL",
-            help="Yahoo Finance에서 사용하는 티커 심볼을 입력하세요.",
-        )
-        .strip()
-        .upper()
+
+    ticker_options = [t for t, _ in TICKER_PRESETS] + [CUSTOM_OPTION]
+    selected = st.selectbox(
+        "투자 종목 (티커)",
+        options=ticker_options,
+        index=0,
+        format_func=_format_ticker_option,
+        help="목록을 펼쳐 선택하거나, 입력창에 티커/회사명을 타이핑하면 자동으로 필터링됩니다.",
     )
+
+    if selected == CUSTOM_OPTION:
+        ticker_input = (
+            st.text_input(
+                "티커 직접 입력",
+                value="",
+                placeholder="예: BRK-A, NVDX, SPXL",
+                help="Yahoo Finance에서 사용하는 티커 심볼을 입력하세요.",
+            )
+            .strip()
+            .upper()
+        )
+    else:
+        ticker_input = selected
 
 if not ticker_input:
     st.info("👈 사이드바에서 티커를 입력해 주세요.")
