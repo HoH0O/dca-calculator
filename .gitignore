@@ -20,9 +20,10 @@ dist/
 # Streamlit
 .streamlit/secrets.toml
 
-# IDE
+# IDE / tooling
 .vscode/
 .idea/
+.claude/
 *.swp
 
 # OS
