@@ -25,14 +25,61 @@ st.caption("yfinance 실시간 데이터를 활용해 과거 적립식 투자의
 # ---------------------------------------------------------------------------
 # Data layer
 # ---------------------------------------------------------------------------
+def _make_yf_session():
+    """Yahoo Finance 봇 차단을 우회하기 위한 브라우저 위장 세션.
+
+    Streamlit Cloud 같은 클라우드 환경에서 yfinance가 빈 결과를 반환하는
+    문제(Yahoo의 IP/User-Agent 차단)를 피하려면 curl_cffi의 impersonate
+    세션을 yf.Ticker에 주입하는 것이 가장 안정적이다.
+    """
+    try:
+        from curl_cffi import requests as cffi_requests
+
+        return cffi_requests.Session(impersonate="chrome")
+    except Exception:
+        return None
+
+
 @st.cache_data(ttl=60 * 60, show_spinner=False)
 def fetch_price_history(ticker: str) -> pd.DataFrame:
     """티커의 상장일부터 현재까지 일별 종가를 가져온다."""
-    df = yf.download(ticker, period="max", progress=False, auto_adjust=True)
+    df = pd.DataFrame()
+    last_error: Exception | None = None
+
+    # 1차: curl_cffi 위장 세션 + Ticker.history (클라우드에서 가장 안정적)
+    session = _make_yf_session()
+    if session is not None:
+        try:
+            t = yf.Ticker(ticker, session=session)
+            df = t.history(period="max", auto_adjust=True)
+        except Exception as e:
+            last_error = e
+            df = pd.DataFrame()
+
+    # 2차: 일반 Ticker.history
     if df is None or df.empty:
+        try:
+            t = yf.Ticker(ticker)
+            df = t.history(period="max", auto_adjust=True)
+        except Exception as e:
+            last_error = e
+            df = pd.DataFrame()
+
+    # 3차: yf.download
+    if df is None or df.empty:
+        try:
+            df = yf.download(
+                ticker, period="max", progress=False, auto_adjust=True, threads=False
+            )
+        except Exception as e:
+            last_error = e
+            df = pd.DataFrame()
+
+    if df is None or df.empty:
+        if last_error is not None:
+            raise RuntimeError(f"yfinance 호출 실패: {last_error}")
         return pd.DataFrame()
 
-    # yfinance 최신 버전은 MultiIndex 컬럼을 반환할 수 있음
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = df.columns.get_level_values(0)
 
